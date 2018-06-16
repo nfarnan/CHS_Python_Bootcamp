@@ -978,15 +978,670 @@ finally:
 
 ## Lists
 
+* Mutable sequences of values
+
+* **NEED EXAMPLES OF ALL OF THESE**
+	* **CAN WING IT**
+
+* Can be initialized with `[]`
+* Can be indexed
+* Can be sliced
+
+* Size is dynamic, not pre-set like Java arrays or C arrays
+	* More like Java ArrayList
+
+* Can contain data of mixed types
+
+* `len()` still applies here
+
+* Has operators similar to strings:
+	* `+` is a concatenation operator
+	* `*` is a repetition operator
+	* No vector math/matrix math support
+		* For that, look to NumPy...
+
+* Key list methods:
+	* `list.append(x)`: add `x` to the end of the list
+	* `list.remove(x)`: remove the first item from the list whose value is `x`
+		```python
+		a = [1, 2, 3]
+		a.remove(2)
+		a == [1, 3] #True
+		```
+	* `list.pop()`: remove the last item in the list
+	* `list.pop(i)`: remove the item at index `i`
+		```python
+		a = [1, 2, 3]
+		a.remove(1)
+		a == [1, 3] #True
+		```
+	* `list.clear()`: remove all items from the list
+
+### List comprehensions
+
+* Note this is outside the scope of Gaddis...
+* Consider creating a list of the squares of numbers 0 - 9:
+
+```python
+sq = []
+for x in range(10):
+	sq = x ** 2
+```
+
+* List comprehensions offer a shortcut syntax for things like this:
+
+```python
+sq = [x ** 2 for x in range(10)]
+```
+
+* Also supports an `if` clause:
+
+```python
+odd_sq = [x ** 2 for x in range(10) if x % 2 != 0]
+```
+
+* Can support multiple `for` clauses:
+
+```python
+t = [[x, y] for x in range(3) for y in range(3)]
+```
+
+* Also note that by making a list of lists, we've covered Pythons approach to 2D arrays
+
+```python
+t = [[x, y, z] for x in range(3) for y in range(3) for z in range(3) if x != y and x != z]
+```
+
+* Can be nested:
+
+```python
+t = [[str(x) + y for y in ['a', 'b', 'c']] for x in range(3)]
+```
+
+### Recursion revisited
+
+* Write a recursive method to see if a given value is in a list (taking in a list and a value to search for):
+
+```python
+def find(l, v):
+	if len(l) == 0:
+		return False
+	if l[0] == v:
+		return True
+	else:
+		return find(l[1:], v)
+```
+
+* Now return the index that that value appears at and `-1` if it isn't in the list:
+
+```python
+def find(l, v):
+	if len(l) == 0:
+		return -1
+	if l[0] == v:
+		return 0
+	else:
+		rv = find(l[1:], v)
+		if rv == -1:
+			return rv
+		else:
+			return rv + 1
+```
+
+* How many recursive calls do we have to make?
+	* `len(l)` in the worst case
+	* Each recursive call reduces the number of indices left to check by 1
+* Can we do it in fewer?
+	* What about if we know the list is sorted?
+		* Can cut the number of indices left to check in half
+		* Check the middle
+		* Recurse left or right accordingly
+
+```python
+def bin_search(l, v):
+	return bs_rec(l, v, 0, len(l))
+
+def bs_rec(l, v, low, hi):
+	if v > l[hi - 1] or v < l[low]:
+		return -1
+
+	mid = (hi + low) // 2
+
+	if v == l[mid]:
+		return mid
+	elif v < l[mid]:
+		return bs_rec(l, v, low, mid)
+	elif v > l[mid]:
+		return bs_rec(l, v, mid + 1, hi)
+	else:
+		return -1
+```
+
+* How many recursive calls needed here?
+	* Or: how many times can we divide the list in half before there is only 1 index left to check?
+	* log<sub>2</sub>(n)
+		* Where n is the length of the original list
+
+* Would do Towers of Hanoi here
+	* Book version uses only ints
+	* Might be more intuitive to `append()` and `pop()` from lists to add/remove the "disks" from the "pegs"
+
 ## Tuples
+
+* **IM**mutable sequences of values
+
+* Can be initialized with `()`
+	* or without...
+* Can be indexed
+* Can be sliced
+
+* Cannot update an item in the tuple
+
+```python
+t = (1, 2, 3)
+t[1] = 4  # ERROR
+```
+
+* Size cannot be changed (again, immutable!)
+
+* Has operators similar to strings/lists:
+	* `+` is a concatenation operator
+	* `*` is a repetition operator
+	* How are these allowed, I thought tuples were immutable?
+		* They are, we're not modifying the tuple, but producing a *new* tuple
+		* `3 + 5` does not change the value of `3` or `5`, for example
+
+* How do you define an empty tuple?
+
+```pyton
+()
+```
+
+* What about a tuple with only 1 element?
+	* `(1)` will be interpreted as using the paren operators in a math statement
+	* The commas in tuples of more than 1 item disambuguate the syntax
+	* But how do we define a singleton tuple?
+
+```python
+(1,)
+```
+
+* Trailing comma disambiguates meaning
+
+* Actually, since the commas indicate a tuple, we can omit the parens:
+
+```python
+t = 1, 2, 3
+type(t)  #<class 'tuple'>
+```
+
+* Note this means the following is not a syntax error!
+	
+```python
+t = 1,
+print(t)  #(1,)
+```
+
+* This is referred to as *tuple packing*
+
+* Tuples can also be unpacked
+
+```python
+t = 1, 2, 3
+a, b, c = t
+print(a)
+print(b)
+print(c)
+```
+
+* Note that Python's ability to return multiple values is just tuple packing/unpacking
+
+```python
+def test()
+	return 1, 2, 3  # packed into a tuple, return type is tuple
+
+a, b, c = test()  # returned tuple is unpacked
+```
 
 ## Dictionaries
 
+* Key/value stores
+
+* Initialization:
+
+```python
+d = {"key1":"value1", "key2":"value2"}
+```
+
+* Can be indexed
+	* By keys
+
+* **Cannot** be sliced
+* Does **NOT** have `+` and `*` operators like strings/lists/tuples
+
+* `{}` initializes an empty dictionary
+
+### Dictionary comprehensions
+
+* Work similarly to list comprehensions:
+
+```python
+dc = {x : x ** 2 for x in range(10)}
+```
+
 ## Sets
+
+* Unordered collections with no duplicate elements
+
+* Cannot be indexed
+* Cannot be sliced
+* No `+` or `*`
+
+* Initialized with `{}`
+
+```python
+s = {1, 2, 3, 3, 3, 4}
+```
+
+* Lack of key/value `:`'s disambiguates from dictionaries
+	* But how do you define an empty set??
+	
+```python
+s = set()
+print(s)  # set()
+s.add(1)
+print(s)  # {1}
+```
+
+### Set operations
+
+* `set.isdisjoint(other)`: True if the intersection of `set` and `other` is the empty set
+* `set.issubset(other)`: True if `set` is a subset of `other`
+	* Note that `<=` can also be used!
+	* And `<` can be use for proper subset testing
+* `set.issuperset(other)`
+	* Note also have `<=` and `<`
+* `set.union(*others)`
+	* `|`
+* `set.intersection(*others)`
+	* `&`
+* `set.difference(*others)`
+	* `-`
+* `set.symmetric_difference(other)`: Return a new set with the items in either but not in both
+
+## Collection functions
+
+* Like `set()`, we also have `list()`, `tuple()`, and `dict()`
+	* Note that `dict()` is a little tricky:
+
+```python
+d = dict(one=1, two=2, three=3)
+e = dict([("one", 1), ("two", 2), ("three", 3)])
+f = {'one': 1, 'two': 2, 'three': 3}
+d == e == f  # True
+```
+
+* Can be used to convert between different collection types:
+
+```python
+a = [1, 2, 3]
+b = [3, 4, 5]
+intersection = list(set(a) & set(b))
+print(intersection)  # [3]
+```
+
+* Can also be used to covert other things to a collection:
+
+```python
+r = range(10)
+type(r)  # <class 'range'>
+l = list(r)
+type(l)  # <class 'list'>
+print(l)  # [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+```
 
 # OO (Gaddis Ch 10, 11)
 
+## Primary programming paradigms:
+* Procedural
+	* What we have been doing so far, program is built up using different *procedures* or functions
+* Functional
+	* Makes extensive use of recursion
+	* Built out of small, pure functions
+* Object oriented
+	* Currently the most popular
+	* Centers around breaking your program up and splitting it amongst different objects
+
+## Objects
+* Contain both data (attributes) and code (methods)
+	* Note the distinction of method vs. function
+		* Former tied to object and operates on the object's data attributes
+		* Latter object independent
+* By moving data into objects, we can achieve *encapsulation*
+	* Make it so that data attributes are accessible only via object methods
+		* Accessors: methods only to get attribute values
+		* Mutators: methods only to set attribute values
+	* Note that we can't actually do strict encapsulation in Python...
+
+## Classes
+* The blueprint for an object
+* Defining your own complex data type
+* All of the code used by an object in defined within a class
+* We create objects by *instantiating* classes
+* Can have multiple instances (objects) of the same class
+
+* Constructors
+	* `__init__()`
+
+* Other special methods:
+	* `__str__()` returns a string representation of the object
+		* `print(x)` is equivalent to `print(str(x))`
+		* Essentially `toString()` from Java
+	* `__repr__()` returns a representation of the object
+		* repr() is implicitly called on items displayed by the Python interpreter
+
+* All methods defined with `self` as the first parameter to the class
+	* Is implicitly passed in calling, however
+
+```python
+class Person:
+	def __init__(self, name, age):
+		self.name = name
+		self.age = age
+
+	def display(self):
+		print("Name:", self.name)
+		print("Age:", self.age)
+		print()
+
+	def __str__(self):
+		return self.name
+	
+	def __repr__(self):
+		return "Person('" + self.name + "', " + str(self.age) + ")"
+
+a = Person("Alice", 30)
+print(a)
+print(repr(a))
+print(type(a))
+a.display()
+```
+
+* "Private" attributes in Python:
+
+```python
+class Test:
+	def __init__(self):
+		self.a = "public"
+		self._a = "private by convention"
+		self.__a = "class-private"
+
+t = Test()
+print(t.a)
+print(t._a)
+print(t.__a)  # Error
+print(t._Test__a)
+
+t.a = "modified!"
+t._a = "modified, too!"
+t.__a = "this will error"  # Error
+t._Test__a = "modified as well!"
+print(t.a)
+print(t._a)
+print(t._Test__a)
+```
+
+* Class variables:
+	* Defined outside of a method
+
+```python
+class Dog:
+	tricks = []
+	def __init__(self, name):
+		self.name = name
+	def add_trick(self, trick):
+		self.tricks.append(trick)
+
+f = Dog("Fido")
+b = Dog("Buddy")
+f.add_trick("roll over")
+b.add_trick("play dead")
+print(f.tricks)
+```
+
+* Note that attributes can be added outside of `__init__()` and futher outside of the class!
+	* Empty classes can be used to just store data
+
+```python
+class Empty:
+	pass
+
+e = Empty()
+e.test = 1
+e.other_test = "another test!"
+
+print(e)
+print(repr(e))
+print(type(e))
+print(e.test)
+print(e.other_test)
+```
+
+## Inheritance
+
+* Chains of "is-a" relationships:
+	* A student is a person
+		* student: subclass
+		* person: superclass
+	* A dog is a mammal; a mammal is an animal
+		* A mammal should have all the properties of an animal and then some
+		* A dog should have all the properties of a mammal and then some
+
+* Two approaches to developing chains of inheritance:
+	* Specialization:
+		* Top-down approach
+		* Start with general classification
+			* E.g., all people
+		* Break into smaller groups based on group-specific attributes
+			* E.g., students
+	* Generalization:
+		* Bottom-up approach
+		* Start with individual groups
+			* E.g., dog, cat
+		* Identify shared attributes to define superclasses
+			* E.g., mammals, animals
+
+* Polymorphism
+	* Allowing for different method definitions in super and sub classes
+
+```python
+class Person:
+	def __init__(self, name, age):
+		self.name = name
+		self.age = age
+
+	def display(self):
+		print("Name:", self.name)
+		print("Age:", self.age)
+		print()
+
+	def __str__(self):
+		return self.name
+	
+	def __repr__(self):
+		return "Person('" + self.name + "', " + str(self.age) + ")"
+
+class Student(Person):
+	def __init__(self, name, age):
+		super().__init__(name, age)
+
+		self.classes = []
+
+	def add_class(self, new):
+		self.classes.append(new)
+
+	def display(self):
+		super().display()
+		print("Classes:", self.classes)
+		print()
+
+	def __repr__(self):
+		return "Student('" + self.name + "', " + str(self.age) + ", " + str(self.classes) + ")"
+
+def display_person(p):
+	p.display()
+
+a = Person("Alice", 30)
+print(a)
+print(repr(a))
+print(type(a))
+
+display_person(a)
+
+b = Student("Bob", 20)
+print(b)
+print(repr(b))
+print(type(b))
+
+display_person(b)
+
+b.add_class("CS1520")
+print(b)
+
+display_person(b)
+```
+
+* Multiple inheritance
+	* Python allows it
+	* Java does not
+	* Allows for lattice of inheritance instead of strict heirarchy
+		* A student-worker is a student and is a worker
+			* Needs all properties of both
+
 # Modules
+
+* Any Python file is a module that can be imported into other Python modules with import
+
+* Let `a.py` contain:
+
+```python
+def print_n():
+	for i in range(10):
+		print(i)
+
+def print_l():
+	for l in ["a", "b", "c"]:
+		print(l)
+```
+
+* Can then (in other files):
+
+```python
+import a
+a.print_n()
+```
+
+```python
+from a import print_l
+print_l()
+```
+
+* Consider:
+	* Running python `a.py` from the command line
+	* Having `import a` in another Python file
+	* How can we have the former produce output while still being able to use the latter to pull in definitions??
+
+	* Both will evaluate each line of a.py
+		* However, `python a.py` will have `__name__` set to `"__main__"`
+		* Hence, we can choose what to do if run as a script:
+			* At the end of `a.py`, have:
+
+```python
+if __name__ == "__main__":
+	print("Producing output!")
+```
+
+* Revisiting Person/Student example:
+
+```python
+class Person:
+	def __init__(self, name, age):
+		self.name = name
+		self.age = age
+
+	def display(self):
+		print("Name:", self.name)
+		print("Age:", self.age)
+		print()
+
+	def __str__(self):
+		return self.name
+	
+	def __repr__(self):
+		return "Person('" + self.name + "', " + str(self.age) + ")"
+
+class Student(Person):
+	def __init__(self, name, age):
+		super().__init__(name, age)
+
+		self.classes = []
+
+	def add_class(self, new):
+		self.classes.append(new)
+
+	def display(self):
+		super().display()
+		print("Classes:", self.classes)
+		print()
+
+	def __repr__(self):
+		return "Student('" + self.name + "', " + str(self.age) + ", " + str(self.classes) + ")"
+
+def display_person(p):
+	p.display()
+
+def main():
+	a = Person("Alice", 30)
+	print(a)
+	print(repr(a))
+	print(type(a))
+
+	display_person(a)
+
+	b = Student("Bob", 20)
+	print(b)
+	print(repr(b))
+	print(type(b))
+
+	display_person(b)
+
+	b.add_class("CS1520")
+	print(b)
+
+	display_person(b)
+
+if __name__ == "__main__":
+	main()
+```
+
+# Serialization
+
+* Writing out a representation of objects to a file to reload their state later
+* Can use pickle!
+
+```python
+import pickle
+
+l = [1, 2, 3, 4, 5]
+with open("test.pkl", "wb") as outf:
+	pickle.dump(l, outf)
+
+m = None
+with open("test.pkl", "rb") as inf:
+	m = pickle.load(inf)
+
+print(m)
+```
 
 # Iterators and Generators
 
@@ -1010,3 +1665,38 @@ finally:
 
 # Rest of the Pitt CS curriculum
 
+* 0401: Intermediate programming in Java
+	* Also offered through CHS!
+	* More advanced OO
+	* More advanced programming techniques overall
+* 0441: Discrete structures
+	* Logic
+	* Counting
+	* Probability
+	* Relations
+	* CS-based math background
+* 0445: Data structures
+	* How to implement a linked-list
+		* How is it structurally different from an array?
+	* Trees
+	* Heaps
+	* MUCH more advanced OO
+	* Last of the core programming skills
+* 0447: Intro to architecture
+	* How does the CPU perform its "tricks"?
+	* Overview of assembly
+	* Basic system architecture
+	* Should be able to (for a basic RISC architecture) "read" a binary instruction
+* 0449: Intro to system programming
+	* Learn C
+	* Basics of interacting with an operating system
+	* Threading
+* 1501: Algorithm implementation
+	* Tries/advanced searching techniques
+	* Graph algorithms
+	* Final test of programming skills
+* 1502: Formal methods in CS
+	* Proofs and further logic
+	* Finite state machines
+* 1550: Operating systems
+* From here, electives!
