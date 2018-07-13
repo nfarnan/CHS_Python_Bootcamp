@@ -932,7 +932,8 @@ except Exception as err:
 ```
 
 ## `try` ... `except` ... `else`
-	* If no `except`'s are tripped, run the `else` block
+
+* If no `except`'s are tripped, run the `else` block
 
 ```python
 try:
@@ -953,8 +954,9 @@ else:
 			* Else, exception could be encountered before its initialized!
 
 ## `try` ... `except` ... `else` ... `finally`
-	* Whether we trip an `except` or the `else`, afterwards run `finally` block
-	* Note that `else` isn't necessary, can have `try` ... `except` ... `finally`
+
+* Whether we trip an `except` or the `else`, afterwards run `finally` block
+* Note that `else` isn't necessary, can have `try` ... `except` ... `finally`
 
 ```python
 try:
@@ -1384,7 +1386,7 @@ print(t._Test__a)
 
 t.a = "modified!"
 t._a = "modified, too!"
-t.__a = "this will error"  # Error
+t.__a = "this will not error"  # Creates new attribute
 t._Test__a = "modified as well!"
 print(t.a)
 print(t._a)
@@ -1645,9 +1647,250 @@ print(m)
 
 # Iterators and Generators
 
+## Iterators
+
+* Lists, range objects, etc. are *iterable*
+	* Meaning that an iterator can be created for either type
+
+* Iterators must implement the method `__next__()`
+	* Successive calls to `__next__()` will iterate through the items in the collection
+	* When no more items remain in the collection, all future calls to `__next__()` should raise a `StopIteration` exception
+	
+* Iterators can be created from iterable items via the `iter()` function
+
+* Example `for` loop:
+
+
+```python
+for item in [1, 2, 3, 4, 5]:
+	print(item)
+```
+
+```python
+temp_iter = iter([1, 2, 3, 4, 5])
+while True:
+	try:
+		item = temp_iter.__next__()
+	except StopIteration:
+		break
+
+	print(item)
+```
+
+## Generators
+
+* Functions that use the yield keyword to return values in order to create iterators
+	* State is maintained between function calls to the generator
+
+```python
+def enum(seq):
+	n = 0
+	for i in seq:
+		yield n, i
+		n += 1
+
+for f in enum(["apple", "orange", "banana"]):
+	print(f)
+```
+
+```python
+def fibonacci():
+	i = j = 1
+	while True:
+		r, i, j = i, j, i + j
+		yield r
+
+for fib in fibonacci():
+	print(fib)
+	if fib > 100:
+		break
+```
+
+### Generator expressions
+
+* Recall list/dictionary comprehensions from last time.  What do you think this will produce into `x`?
+
+```python
+a = (x ** 2 for x in range(10) if x % 2 == 0)
+```
+
+* **NOT** a tuple comprehension
+* A generator expression
+	* Will yeild each of the items that would be placed into a list for the equivalent list comprehension
+
+```python
+b = [x ** 2 for x in range(10) if x % 2 == 0]
+
+for i in a:
+	print(i)
+
+for j in b:
+	print(j)
+```
+
+* Why `for i in a:` and not `for i in a():`?
+	* Because a is already a generator
+	* For `fibonacci`, above, that function *returns* a generator
+
+* Why generator expressions when you already have list comprehensions?
+	* Memory footprint!
+
+```python
+a = (x ** 2 for x in range(10000))
+b = [x ** 2 for x in range(10000)]
+
+import sys
+sys.getsizeof(a)
+sys.getsizeof(b)
+```
+
+* How much space would a list of the `fibonnaci` generator take up?
+	* Let's find out!
+
+```python
+def fibonacci():
+	i = j = 1
+	while True:
+		r, i, j = i, j, i + j
+		yield r
+
+sys.getsizeof(list(fibonnaci()))
+```
+
+# Lambda functions
+
+* Small, anonymous functions
+
+```python
+a = lambda x: x ** 2
+print(a(2))
+print(a(4))
+
+b = lambda x, y: x + y
+print(b(2, 3))
+print(b(4, 5))
+```
+
+* The following are equivalent:
+
+```python 
+lambda PARAMS: EXPR
+```
+
+```python
+def <lambda>(PARAMS):
+	return EXPR
+```
+
+* Can be used to easily create functions that return other functions:
+
+```python
+def decrementer(n):
+	return lambda x: x-n
+
+by5 = decrementer(5)
+print(by5(5))
+print(by5(2))
+print(by5(7))
+
+by3 = decrementer(3)
+print(by3(5))
+print(by3(2))
+print(by3(7))
+```
+
+* y tho?
+	* Consider `sorted()` function
+	* Takes a `key` keyword argument that is a function
+	* The following will sort a list of integers by magnitude:
+
+```python
+l = [1, 5, 2, 7, -2, -20, -3, -8]
+by_mag = sorted(l, key=lambda x: abs(x))
+print(by_mag)
+```
+
+# Argument lists
+
+## Arbitrary argument lists
+
+* `print()` accepts an arbitrary number of arguments, combines them together, and outputs them
+* How do you define a function that takes in an unknown number of inputs??
+	* Arbitrary argument lists
+
+```python
+def foo(*args):
+	print(args)
+
+foo(1, 2, 3, 4, 5)
+foo("a", "string", 5, 8, "1")
+foo("a", "string", 5, 8, "1", key="key")  # TypeError, unexpected keyword argument
+```
+
+* `print()` also takes keyword arguments (e.g., `sep` and `end`), though...
+
+```python
+def faux_print(*args, sep=" ", end="\n"):
+	rv = str(args[0])
+	for a in args[1:]:
+		rv = rv + sep + a
+	rv += end
+	print("Would print '" + rv + "'")
+
+faux_print("hello", "there", "testing")
+```
+
+* Can you have arbitrary keyword aruments?
+	* Of course!
+
+```python
+def bar(**kwargs):
+	print(kwargs)
+
+bar(a="a", b="b", c=3)
+bar(5, a="a", b="b", c=3)  # TypeError, bar() takes 0 positional arguments but 1 was given
+```
+
+* And they can be combined...
+
+```python
+def baz(*args, **kwargs):
+	print(args)
+	print(kwargs)
+
+baz(1, 2, 3, a="a", b="b", c="c")
+```
+
+## Unpacking argument lists
+
+* Can use similar syntax to expand a list or a tuple into positional arguments
+
+```python
+def check(a, b, c):
+	print(a)
+	print(b)
+	print(c)
+	print()
+
+l = [1, 2, 3]
+check(*l)
+```
+
+* Or a dictionary into keyword arguments
+
+```python
+d = {"b":2, "a":1, "c":3}
+check(**d)
+```
+
 # Matplotlib
 
+* Refer to Gaddis 7.10 for line graph, bar chart, and pie chart examples
+
 # Flowcharts
+
+* Useful to help students organize their thoughts/develop algorithms independent of learning Python syntax
+* Allows them to foster computational thinking without memorizing sytax
 
 # Changes from 3rd Ed. to 4th Ed. of Gaddis:
 * Python turtle graphics
